@@ -4,20 +4,22 @@
 #include <dt-bindings/zmk/bt.h>
 #include <dt-bindings/zmk/ext_power.h>
 
+#define rgb_hn &rgb_ug RGB_HUI
+#define rgb_hp &rgb_ug RGB_HUD
+#define rgb_en &rgb_ug RGB_EFF
+#define rgb_ep &rgb_ug RGB_EFR
+#define rgb_tg &rgb_ug RGB_TOG
+#define pwr_tg &ext_power EP_TOG
 
-
+// for testing feature only
 / {
         keymap {
                 compatible = "zmk,keymap";
-                default_layer {
-                        bindings = <
-&kp TAB   &kp Q &kp W &rgb_ug RGB_TOG   &kp R &kp T                       &kp Y   &kp U  &kp I     &kp O   &kp P    &kp SPACE
-&kp LCTRL &kp A &kp S &ext_power EP_TOG    &kp F &kp G                       &kp H   &kp J  &kp K     &kp L   &kp SEMI &kp BSPC
-&kp LSHFT &rgb_ug RGB_HUD &rgb_ug RGB_HUI &kp C    &kp V &kp B     &kp N3 &kp N4 &kp N   &kp M  &kp COMMA &kp DOT &kp FSLH &kp RSHFT
-                      &kp N1 &rgb_ug RGB_EFR &rgb_ug RGB_EFF                   &kp RET &kp B  &kp N5
-                        >;
-
-                        sensor-bindings = <&inc_dec_kp N0 N1>;
-                };
+                default_layer { bindings = <
+&kp TAB   &kp Q  &kp W  rgb_tg &kp R &kp T         /*|*/        &kp Y   &kp U &kp I     &kp O   &kp P    &kp SPACE
+&kp LCTRL &kp A  &kp S  pwr_tg &kp F &kp G         /*|*/        &kp H   &kp J &kp K     &kp L   &kp SEMI &kp BSPC
+&kp LSHFT rgb_hp rgb_hn &kp C  &kp V &kp B  &kp N3 /*|*/ &kp N4 &kp N   &kp M &kp COMMA &kp DOT &kp FSLH &kp RSHFT
+                                     &kp N1 rgb_ep /*|*/ rgb_en &kp RET &kp B &kp N5 >;
+                                     sensor-bindings = <&inc_dec_kp N0 N1>; };
         };
 };
