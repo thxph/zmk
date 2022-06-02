@@ -1,0 +1,11 @@
+file_format: "1"
+id: miniris
+name: Miniris
+type: shield
+requires: [nrfmicro_13]
+features:
+  - keys
+  - underglow
+siblings:
+  - miniris_left
+  - miniris_right

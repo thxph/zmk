@@ -1,0 +1,5 @@
+config SHIELD_MINIRIS_LEFT
+    def_bool $(shields_list_contains,miniris_left)
+
+config SHIELD_MINIRIS_RIGHT
+    def_bool $(shields_list_contains,miniris_right)
