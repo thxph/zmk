@@ -42,12 +42,14 @@ static int on_keymap_binding_pressed(struct zmk_behavior_binding *binding,
     const struct zmk_behavior_ext_power_config *config = (struct zmk_behavior_ext_power_config *)dev->config;
 
     switch (binding->param1) {
+    case EXT_POWER_SAV_CMD:
+        return ext_power_save_state();
     case EXT_POWER_OFF_CMD:
-        return zmk_power_domain_disable(config->pd, true);
+        return zmk_power_domain_disable(config->pd, false);
     case EXT_POWER_ON_CMD:
-        return zmk_power_domain_enable(config->pd, true);
+        return zmk_power_domain_enable(config->pd, false);
     case EXT_POWER_TOGGLE_CMD:
-        zmk_power_domain_toggle(config->pd, true);
+        zmk_power_domain_toggle(config->pd, false);
     default:
         LOG_ERR("Unknown ext_power command: %d", binding->param1);
     }

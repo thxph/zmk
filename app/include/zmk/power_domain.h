@@ -10,6 +10,8 @@
 
 #if CONFIG_ZMK_EXT_POWER
 
+int ext_power_save_state();
+
 const int zmk_power_domain_disable(const struct device *pd_dev, bool save_state);
 const int zmk_power_domain_enable(const struct device *pd_dev, bool save_state);
 const int zmk_power_domain_toggle(const struct device *pd_dev, bool save_state);

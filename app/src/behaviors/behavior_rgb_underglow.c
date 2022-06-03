@@ -99,6 +99,8 @@ on_keymap_binding_convert_central_state_dependent_params(struct zmk_behavior_bin
 static int on_keymap_binding_pressed(struct zmk_behavior_binding *binding,
                                      struct zmk_behavior_binding_event event) {
     switch (binding->param1) {
+    case RGB_SAV_CMD:
+        return zmk_rgb_underglow_save_state();
     case RGB_TOG_CMD:
         return zmk_rgb_underglow_toggle();
     case RGB_ON_CMD:
