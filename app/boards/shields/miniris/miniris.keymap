@@ -35,20 +35,20 @@
 &kp N1     &kp A      &kp S      &kp D      &kp F      &kp G                 /*|*/            &kp H      &kp J      &kp K      &kp L      &kp SEMI   &kp N8
 &kp N2     &kp Z      &kp X      &kp C      &kp V      &kp B      &kp N3     /*|*/ &kp N4     &kp N      &kp M      &kp COMMA  &kp DOT    &kp FSLH   &kp N9
                                             &kp N5     &mo L1     &kp SPACE  /*|*/ &kp RET    &mo R1     &kp N6 >;
-                         sensor-bindings = <&inc_dec_kp N0 N1>; };
+                         sensor-bindings = <&inc_dec_kp N0 N1 &inc_dec_kp N8 N9>; };
 
                 l1_layer { bindings = <
 pwr_tg     xbt_n      rgb_sp     rgb_sn     rgb_ep     rgb_en                /*|*/            &kp Y      &kp U      &kp I      &kp O      &kp P      &kp N2
 pwr_sv     xbt_p      &kp S      &kp D      rgb_bp     rgb_bn                /*|*/            &kp H      &kp J      &kp K      &kp L      &kp SEMI   &kp BSPC
 xbt_clr    &kp Z      &kp X      &kp C      rgb_hp     rgb_hn     &trans     /*|*/ &kp N4     &kp N      &kp M      &kp COMMA  &kp DOT    &kp FSLH   &kp RSHFT
                                             rgb_sv     &trans     rgb_tg     /*|*/ &kp N1     &trans     &kp N5 >;
-                         sensor-bindings = <&inc_dec_kp N2 N3>; };
+                         sensor-bindings = <&inc_dec_kp N2 N3 &inc_dec_kp N6 N7>; };
 
                 r1_layer { bindings = <
 &kp N3     &kp Q      &kp W      rgb_tg     &kp R      &kp T                 /*|*/            &kp Y      &kp U      &kp I      &kp O      &kp P      &kp N4
 &kp LCTRL  &kp A      &kp S      pwr_tg     &kp F      &kp G                 /*|*/            &kp H      &kp J      &kp K      &kp L      &kp SEMI   &kp BSPC
 &kp LSHFT  rgb_hp     rgb_hn     &kp C      &kp V      &kp B      &kp N3     /*|*/ &kp N4     &kp N      &kp M      &kp COMMA  &kp DOT    &kp FSLH   &kp RSHFT
                                             &kp N1     &trans     &kp N2     /*|*/ &kp N3     &trans     &kp N5 >;
-                         sensor-bindings = <&inc_dec_kp N4 N5>; };
+                         sensor-bindings = <&inc_dec_kp N4 N5  &inc_dec_kp A B>; };
         };
 };
