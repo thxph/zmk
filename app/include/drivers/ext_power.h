@@ -14,6 +14,8 @@
 extern "C" {
 #endif
 
+int ext_power_save_state();
+
 /**
  * @cond INTERNAL_HIDDEN
  *

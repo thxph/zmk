@@ -43,6 +43,8 @@ static int on_keymap_binding_pressed(struct zmk_behavior_binding *binding,
     }
 
     switch (binding->param1) {
+    case EXT_POWER_SAV_CMD:
+        return ext_power_save_state();
     case EXT_POWER_OFF_CMD:
         return ext_power_disable(ext_power);
     case EXT_POWER_ON_CMD:

@@ -316,7 +316,7 @@ int zmk_rgb_underglow_on() {
     state.animation_step = 0;
     k_timer_start(&underglow_tick, K_NO_WAIT, K_MSEC(50));
 
-    return zmk_rgb_underglow_save_state();
+    return 0;
 }
 
 int zmk_rgb_underglow_off() {
@@ -341,7 +341,7 @@ int zmk_rgb_underglow_off() {
     k_timer_stop(&underglow_tick);
     state.on = false;
 
-    return zmk_rgb_underglow_save_state();
+    return 0;
 }
 
 int zmk_rgb_underglow_calc_effect(int direction) {
@@ -359,7 +359,7 @@ int zmk_rgb_underglow_select_effect(int effect) {
     state.current_effect = effect;
     state.animation_step = 0;
 
-    return zmk_rgb_underglow_save_state();
+    return 0;
 }
 
 int zmk_rgb_underglow_cycle_effect(int direction) {
@@ -418,7 +418,7 @@ int zmk_rgb_underglow_change_hue(int direction) {
 
     state.color = zmk_rgb_underglow_calc_hue(direction);
 
-    return zmk_rgb_underglow_save_state();
+    return 0;
 }
 
 int zmk_rgb_underglow_change_sat(int direction) {
@@ -427,7 +427,7 @@ int zmk_rgb_underglow_change_sat(int direction) {
 
     state.color = zmk_rgb_underglow_calc_sat(direction);
 
-    return zmk_rgb_underglow_save_state();
+    return 0;
 }
 
 int zmk_rgb_underglow_change_brt(int direction) {
@@ -436,7 +436,7 @@ int zmk_rgb_underglow_change_brt(int direction) {
 
     state.color = zmk_rgb_underglow_calc_brt(direction);
 
-    return zmk_rgb_underglow_save_state();
+    return 0;
 }
 
 int zmk_rgb_underglow_change_spd(int direction) {
@@ -453,7 +453,7 @@ int zmk_rgb_underglow_change_spd(int direction) {
         state.animation_speed = 5;
     }
 
-    return zmk_rgb_underglow_save_state();
+    return 0;
 }
 
 #if IS_ENABLED(CONFIG_ZMK_RGB_UNDERGLOW_AUTO_OFF_IDLE) ||                                          \
