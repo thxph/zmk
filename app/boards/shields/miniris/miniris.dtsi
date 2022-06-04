@@ -37,7 +37,7 @@ kscan0: kscan {
                           label = "LEFT_ENCODER";
                           a-gpios = <&pro_micro 19 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
                           b-gpios = <&pro_micro 20 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
-                          resolution = <4>;
+                          resolution = <2>;
                           status = "disabled";
                       };
 
@@ -46,7 +46,7 @@ kscan0: kscan {
                            label = "RIGHT_ENCODER";
                            a-gpios = <&pro_micro 19 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
                            b-gpios = <&pro_micro 20 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
-                           resolution = <1>;
+                           resolution = <2>;
                            status = "disabled";
                        };
         sensors {
