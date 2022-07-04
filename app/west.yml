@@ -8,6 +8,7 @@ manifest:
       url-base: https://github.com/infused-kim
   projects:
     - name: zmk-zephyr
+      path: zephyr
       remote: infused-kim
       revision: v3.0.0+zmk-fixes+pd-oled
       clone-depth: 1
