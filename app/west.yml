@@ -5,9 +5,9 @@ manifest:
     - name: zmkfirmware
       url-base: https://github.com/zmkfirmware
   projects:
-    - name: zephyr
-      remote: zmkfirmware
-      revision: v3.0.0+zmk-fixes
+    - name: zmk-zephyr
+      remote: infused-kim
+      revision: v3.0.0+zmk-fixes+pd-oled
       clone-depth: 1
       import:
         # TODO: Rename once upstream offers option like `exclude` or `denylist`
