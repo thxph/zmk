@@ -8,6 +8,25 @@
 #include <dt-bindings/zmk/keys.h>
 #include <dt-bindings/zmk/bt.h>
 
+&oled {
+    power-domain = <&pd_ext_power>;
+};
+
+// Enable power domain on rgb underglow led strip
+&led_strip {
+    power-domain = <&pd_ext_power>;
+};
+
+// Enable device power management policy on pd_ext_power
+/ {
+    dev_pm_policy_1 {
+        compatible = "zmk,dev-pm-policy";
+        label = "DEV_PM_POLICY_1";
+        device = <&pd_ext_power>;
+        auto-off-on-idle;
+    };
+};
+
 / {
         keymap {
                 compatible = "zmk,keymap";

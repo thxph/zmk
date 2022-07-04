@@ -164,16 +164,6 @@ int confirm_peripheral_slot_conn(struct bt_conn *conn) {
     return 0;
 }
 
-void peripheral_event_work_callback(struct k_work *work) {
-    struct zmk_position_state_changed ev;
-    while (k_msgq_get(&peripheral_event_msgq, &ev, K_NO_WAIT) == 0) {
-        LOG_DBG("Trigger key position state change for %d", ev.position);
-        ZMK_EVENT_RAISE(new_zmk_position_state_changed(ev));
-    }
-}
-
-K_WORK_DEFINE(peripheral_event_work, peripheral_event_work_callback);
-
 #if ZMK_KEYMAP_HAS_SENSORS
 K_MSGQ_DEFINE(peripheral_sensor_event_msgq, sizeof(struct zmk_sensor_event),
               CONFIG_ZMK_SPLIT_BLE_CENTRAL_POSITION_QUEUE_SIZE, 4);

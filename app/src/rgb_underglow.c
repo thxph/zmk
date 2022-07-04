@@ -15,8 +15,9 @@
 #include <logging/log.h>
 
 #include <drivers/led_strip.h>
-#include <drivers/ext_power.h>
+#include <pm/device.h>
 
+#include <zmk/power_domain.h>
 #include <zmk/rgb_underglow.h>
 
 #include <zmk/activity.h>
@@ -29,6 +30,12 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
 #define STRIP_LABEL DT_LABEL(DT_CHOSEN(zmk_underglow))
 #define STRIP_NUM_PIXELS DT_PROP(DT_CHOSEN(zmk_underglow), chain_length)
+
+#if CONFIG_ZMK_EXT_POWER
+
+#define STRIP_POWER_DOMAIN DT_LABEL(DT_PHANDLE(DT_CHOSEN(zmk_underglow), power_domain))
+
+#endif
 
 #define HUE_MAX 360
 #define SAT_MAX 100
@@ -59,9 +66,7 @@ static struct led_rgb pixels[STRIP_NUM_PIXELS];
 
 static struct rgb_underglow_state state;
 
-#if IS_ENABLED(CONFIG_ZMK_RGB_UNDERGLOW_EXT_POWER)
-static const struct device *ext_power;
-#endif
+static const struct device *power_domain;
 
 static struct zmk_led_hsb hsb_scale_min_max(struct zmk_led_hsb hsb) {
     hsb.b = CONFIG_ZMK_RGB_UNDERGLOW_BRT_MIN +
@@ -229,7 +234,7 @@ static void zmk_rgb_underglow_save_state_work() {
 static struct k_work_delayable underglow_save_work;
 #endif
 
-static int zmk_rgb_underglow_init(const struct device *_arg) {
+static int zmk_rgb_underglow_init(const struct device *dev) {
     led_strip = device_get_binding(STRIP_LABEL);
     if (led_strip) {
         LOG_INF("Found LED strip device %s", STRIP_LABEL);
@@ -237,13 +242,6 @@ static int zmk_rgb_underglow_init(const struct device *_arg) {
         LOG_ERR("LED strip device %s not found", STRIP_LABEL);
         return -EINVAL;
     }
-
-#if IS_ENABLED(CONFIG_ZMK_RGB_UNDERGLOW_EXT_POWER)
-    ext_power = device_get_binding("EXT_POWER");
-    if (ext_power == NULL) {
-        LOG_ERR("Unable to retrieve ext_power device: EXT_POWER");
-    }
-#endif
 
     state = (struct rgb_underglow_state){
         color : {
@@ -262,7 +260,7 @@ static int zmk_rgb_underglow_init(const struct device *_arg) {
 
     int err = settings_register(&rgb_conf);
     if (err) {
-        LOG_ERR("Failed to register the ext_power settings handler (err %d)", err);
+        LOG_ERR("Failed to register the rgb_underglow settings handler (err %d)", err);
         return err;
     }
 
@@ -278,6 +276,12 @@ static int zmk_rgb_underglow_init(const struct device *_arg) {
     if (state.on) {
         k_timer_start(&underglow_tick, K_NO_WAIT, K_MSEC(50));
     }
+
+#if CONFIG_ZMK_EXT_POWER
+
+    zmk_rgb_underglow_init_power_domain_manager(dev);
+
+#endif
 
     return 0;
 }
@@ -304,17 +308,17 @@ int zmk_rgb_underglow_on() {
         return -ENODEV;
 
 #if IS_ENABLED(CONFIG_ZMK_RGB_UNDERGLOW_EXT_POWER)
-    if (ext_power != NULL) {
-        int rc = ext_power_enable(ext_power);
+    if (power_domain != NULL) {
+        int rc = zmk_power_domain_enable(power_domain, true);
         if (rc != 0) {
-            LOG_ERR("Unable to enable EXT_POWER: %d", rc);
+            LOG_ERR("Unable to enable power domain: %d", rc);
         }
     }
 #endif
 
     state.on = true;
     state.animation_step = 0;
-    k_timer_start(&underglow_tick, K_NO_WAIT, K_MSEC(50));
+    zmk_rgb_underglow_resume();
 
     return 0;
 }
@@ -324,14 +328,28 @@ int zmk_rgb_underglow_off() {
         return -ENODEV;
 
 #if IS_ENABLED(CONFIG_ZMK_RGB_UNDERGLOW_EXT_POWER)
-    if (ext_power != NULL) {
-        int rc = ext_power_disable(ext_power);
+    if (power_domain != NULL) {
+        int rc = zmk_power_domain_disable(power_domain, true);
         if (rc != 0) {
-            LOG_ERR("Unable to disable EXT_POWER: %d", rc);
+            LOG_ERR("Unable to disable power domain: %d", rc);
         }
     }
 #endif
 
+    zmk_rgb_underglow_pause();
+
+    state.on = false;
+
+    return 0;
+}
+
+int zmk_rgb_underglow_resume() {
+    k_timer_start(&underglow_tick, K_NO_WAIT, K_MSEC(50));
+
+    return 0;
+}
+
+int zmk_rgb_underglow_pause() {
     for (int i = 0; i < STRIP_NUM_PIXELS; i++) {
         pixels[i] = (struct led_rgb){r : 0, g : 0, b : 0};
     }
@@ -339,7 +357,6 @@ int zmk_rgb_underglow_off() {
     led_strip_update_rgb(led_strip, pixels, STRIP_NUM_PIXELS);
 
     k_timer_stop(&underglow_tick);
-    state.on = false;
 
     return 0;
 }
@@ -455,6 +472,111 @@ int zmk_rgb_underglow_change_spd(int direction) {
 
     return 0;
 }
+
+#if IS_ENABLED(CONFIG_ZMK_RGB_UNDERGLOW_AUTO_OFF_IDLE) ||                                          \
+    IS_ENABLED(CONFIG_ZMK_RGB_UNDERGLOW_AUTO_OFF_USB)
+static int rgb_underglow_auto_state(bool *prev_state, bool new_state) {
+    if (state.on == new_state) {
+        return 0;
+    }
+    if (new_state) {
+        state.on = *prev_state;
+        *prev_state = false;
+        return zmk_rgb_underglow_on();
+    } else {
+        state.on = false;
+        *prev_state = true;
+        return zmk_rgb_underglow_off();
+    }
+}
+
+static int rgb_underglow_event_listener(const zmk_event_t *eh) {
+
+#if IS_ENABLED(CONFIG_ZMK_RGB_UNDERGLOW_AUTO_OFF_IDLE)
+    if (as_zmk_activity_state_changed(eh)) {
+        static bool prev_state = false;
+        return rgb_underglow_auto_state(&prev_state,
+                                        zmk_activity_get_state() == ZMK_ACTIVITY_ACTIVE);
+    }
+#endif
+
+#if IS_ENABLED(CONFIG_ZMK_RGB_UNDERGLOW_AUTO_OFF_USB)
+    if (as_zmk_usb_conn_state_changed(eh)) {
+        static bool prev_state = false;
+        return rgb_underglow_auto_state(&prev_state, zmk_usb_is_powered());
+    }
+#endif
+
+    return -ENOTSUP;
+}
+
+}
+
+#if CONFIG_ZMK_EXT_POWER
+
+static int zmk_rgb_underglow_pm_action(const struct device *dev, enum pm_device_action action) {
+	LOG_DBG("In zmk_rgb_underglow_pm_action on dev %s with action: %d", dev->name, action);
+
+    switch (action) {
+        case PM_DEVICE_ACTION_RESUME:
+            if(state.on == true) {
+                LOG_DBG("Resuming underglow tick");
+                zmk_rgb_underglow_resume();
+            } else {
+                LOG_DBG("Underglow state off, therefore not resuming.");
+            }
+
+            break;
+        case PM_DEVICE_ACTION_TURN_OFF:
+            if(state.on == true) {
+                LOG_DBG("Pausing underglow tick");
+                zmk_rgb_underglow_pause();
+            } else {
+                LOG_DBG("Underglow state off, therefore not pausing.");
+            }
+
+            break;
+        default:
+            LOG_ERR("PM Action %d not implemented", action);
+            return -ENOTSUP;
+    }
+
+    return 0;
+}
+
+
+int zmk_rgb_underglow_init_power_domain_manager(const struct device *dev) {
+    power_domain = device_get_binding(STRIP_POWER_DOMAIN);
+    if (power_domain == NULL) {
+
+        LOG_ERR("Unable to retrieve power_domain device... is the power-domain property set?");
+        return -1;
+    }
+
+    return zmk_power_domain_init_power_domain_manager_helper(dev, power_domain);
+}
+
+PM_DEVICE_DEFINE(pd_manager_rgb_underglow, zmk_rgb_underglow_pm_action);
+
+#endif // CONFIG_ZMK_EXT_POWER
+
+DEVICE_DEFINE(
+    pd_manager_rgb_underglow,
+    "pd_manager_rgb_underglow",
+    &zmk_rgb_underglow_init,
+
+#if CONFIG_ZMK_EXT_POWER
+    PM_DEVICE_GET(pd_manager_rgb_underglow),
+#else
+    NULL,
+#endif
+
+    NULL,
+    NULL,
+    APPLICATION,
+    CONFIG_APPLICATION_INIT_PRIORITY,
+    NULL
+);
 
 #if IS_ENABLED(CONFIG_ZMK_RGB_UNDERGLOW_AUTO_OFF_IDLE) ||                                          \
     IS_ENABLED(CONFIG_ZMK_RGB_UNDERGLOW_AUTO_OFF_USB)
