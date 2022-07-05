@@ -28,10 +28,11 @@
 		};
 	};
 
-	ext-power {
-		compatible = "zmk,ext-power-generic";
-		label = "EXT_POWER";
-		control-gpios = <&gpio1 9 GPIO_ACTIVE_LOW>;
+	pd_ext_power: pd_ext_power {
+		compatible = "power-domain-gpio";
+		label = "PD_EXT_POWER";
+		enable-gpios = <&gpio1 9 GPIO_ACTIVE_LOW>;
+        startup-delay-us = <50000>;
 	};
 
 	vbatt: vbatt {
