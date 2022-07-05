@@ -45,11 +45,11 @@ static int on_keymap_binding_pressed(struct zmk_behavior_binding *binding,
     case EXT_POWER_SAV_CMD:
         return zmk_power_domain_save_state();
     case EXT_POWER_OFF_CMD:
-        return zmk_power_domain_disable(config->pd, false);
+        return zmk_power_domain_disable(config->pd, true);
     case EXT_POWER_ON_CMD:
-        return zmk_power_domain_enable(config->pd, false);
+        return zmk_power_domain_enable(config->pd, true);
     case EXT_POWER_TOGGLE_CMD:
-        zmk_power_domain_toggle(config->pd, false);
+        zmk_power_domain_toggle(config->pd, true);
     default:
         LOG_ERR("Unknown ext_power command: %d", binding->param1);
     }
