@@ -186,9 +186,9 @@ const int zmk_power_domain_run_action(const struct device *pd_dev, enum zmk_powe
 
     LOG_DBG("Finished running pm_device_action %s on pd `%s`.", pm_device_action_str(zephyr_action), pd_dev->name);
 
-    struct zmk_power_domain_data *pd_data = zmk_power_domain_get_pd_data_for_pd(pd_dev);
-    pd_data->state_user_intended = (bool) zmk_action;
     if(save_state == true) {
+        struct zmk_power_domain_data *pd_data = zmk_power_domain_get_pd_data_for_pd(pd_dev);
+        pd_data->state_user_intended = (bool) zmk_action;
         return zmk_power_domain_save_state();
     }
 
