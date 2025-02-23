@@ -4,29 +4,42 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include <zephyr.h>
-#include <device.h>
-#include <devicetree.h>
-#include <settings/settings.h>
+#include <zephyr/kernel.h>
+#include <zephyr/device.h>
+#include <zephyr/devicetree.h>
+#include <zephyr/settings/settings.h>
 
-#include <logging/log.h>
+#include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(zmk, CONFIG_ZMK_LOG_LEVEL);
 
-#include <zmk/matrix.h>
-#include <zmk/kscan.h>
+#if IS_ENABLED(CONFIG_ZMK_DISPLAY)
+
 #include <zmk/display.h>
-#include <drivers/ext_power.h>
+#include <lvgl.h>
 
-#define ZMK_KSCAN_DEV DT_LABEL(ZMK_MATRIX_NODE_ID)
+#endif
 
-void main(void) {
+int main(void) {
     LOG_INF("Welcome to ZMK!\n");
 
-    if (zmk_kscan_init(ZMK_KSCAN_DEV) != 0) {
-        return;
-    }
+#if IS_ENABLED(CONFIG_SETTINGS)
+    settings_subsys_init();
+    settings_load();
+#endif
 
 #ifdef CONFIG_ZMK_DISPLAY
     zmk_display_init();
+
+#if IS_ENABLED(CONFIG_ARCH_POSIX)
+    // Workaround for an SDL display issue:
+    // https://github.com/zephyrproject-rtos/zephyr/issues/71410
+    while (1) {
+        lv_task_handler();
+        k_sleep(K_MSEC(10));
+    }
+#endif
+
 #endif /* CONFIG_ZMK_DISPLAY */
+
+    return 0;
 }

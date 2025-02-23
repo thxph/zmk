@@ -1,5 +1,0 @@
-menuconfig ZMK_DRIVERS_GPIO
-    bool "GPIO"
-
-rsource "Kconfig.mcp23017"
-rsource "Kconfig.595"
