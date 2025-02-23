@@ -37,17 +37,10 @@ static void set_battery_symbol(lv_obj_t *label, struct battery_status_state stat
     }
 #endif /* IS_ENABLED(CONFIG_USB_DEVICE_STACK) */
 
-    if (level > 95) {
-        strcat(text, LV_SYMBOL_BATTERY_FULL);
-    } else if (level > 65) {
-        strcat(text, LV_SYMBOL_BATTERY_3);
-    } else if (level > 35) {
-        strcat(text, LV_SYMBOL_BATTERY_2);
-    } else if (level > 5) {
-        strcat(text, LV_SYMBOL_BATTERY_1);
-    } else {
-        strcat(text, LV_SYMBOL_BATTERY_EMPTY);
-    }
+    char perc[5] = {};
+    snprintf(perc, sizeof(perc), "%3u%%", level);
+    strcat(text, perc);
+    
     lv_label_set_text(label, text);
 }
 
